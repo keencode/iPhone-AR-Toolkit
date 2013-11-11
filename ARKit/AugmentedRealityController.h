@@ -29,6 +29,9 @@
 @property double minimumScaleFactor;
 @property double maximumRotationAngle;
 
+@property double rotationFactor;
+@property double yOffsetFactor;
+
 @property (nonatomic, retain) UIAccelerometer           *accelerometerManager;
 @property (nonatomic, retain) CLLocationManager         *locationManager;
 @property (nonatomic, retain) ARCoordinate              *centerCoordinate;

@@ -22,6 +22,8 @@
 #define SCALE_FACTOR 1.0
 #define HEADING_NOT_SET -1.0
 #define DEGREE_TO_UPDATE 1
+#define ROTATION_FACTOR 1.5
+#define DEFAULT_Y_OFFSET 2.0
 
 @interface AugmentedRealityController (Private)
 - (void)updateCenterCoordinate;
@@ -74,6 +76,9 @@
     [self setCoordinates:[NSMutableArray array]];
     [self currentDeviceOrientation];
 	
+    self.rotationFactor = ROTATION_FACTOR;
+    self.yOffsetFactor = DEFAULT_Y_OFFSET;
+    
 	degreeRange = [arView frame].size.width / ADJUST_BY;
 
 #if !TARGET_IPHONE_SIMULATOR
@@ -369,7 +374,6 @@
         UIView *markerView = [item displayView];
         
 		if ([self shouldDisplayCoordinate:item]) {
-		
             CGPoint loc = [self pointForCoordinate:item];
             CGFloat scaleFactor = SCALE_FACTOR;
 	
@@ -378,19 +382,27 @@
 
 			float width	 = [markerView bounds].size.width  * scaleFactor;
 			float height = [markerView bounds].size.height * scaleFactor;
+            
+            CGFloat targY = loc.y - ((1.0-scaleFactor) * loc.y * self.yOffsetFactor) + 50.0;
+            CGRect targFrame = CGRectMake(loc.x - width / 2.0, targY, width, height);
 
-			[markerView setFrame:CGRectMake(loc.x - width / 2.0, loc.y, width, height)];
-            [markerView setNeedsDisplay];
+//			[markerView setFrame:CGRectMake(loc.x - width / 2.0, loc.y, width, height)];
+//            [markerView setNeedsDisplay];
 			
 			CATransform3D transform = CATransform3DIdentity;
+            double angleDifference =  0.0;
 			
 			// Set the scale if it needs it. Scale the perspective transform if we have one.
 			if ([self scaleViewsBasedOnDistance]) 
 				transform = CATransform3DScale(transform, scaleFactor, scaleFactor, scaleFactor);
 		
 			if ([self rotateViewsBasedOnPerspective]) {
-				transform.m34 = 1.0 / 300.0;
-		/*		
+                transform.m34 = -1.0 / 500.0;
+                angleDifference = item.azimuth - self.centerCoordinate.azimuth;
+                transform = CATransform3DRotate(transform, (-angleDifference * self.rotationFactor), 0, 1, 0);
+
+//				transform.m34 = 1.0 / 300.0;
+		/*
 				double itemAzimuth		= [item azimuth];
 				double centerAzimuth	= [[self centerCoordinate] azimuth];
 				
@@ -402,8 +414,32 @@
 		*/		
 		//		double angleDifference	= itemAzimuth - centerAzimuth;
 		//		transform				= CATransform3DRotate(transform, [self maximumRotationAngle] * angleDifference / 0.3696f , 0, 1, 0);
-			}
-			[[markerView layer] setTransform:transform];
+//			}
+                [[markerView layer] setTransform:transform];
+                [markerView setNeedsDisplay];
+                
+                if (angleDifference > 0) {
+                    markerView.layer.anchorPoint = CGPointMake(0.0, 0.5);
+                } else {
+                    markerView.layer.anchorPoint = CGPointMake(1.0, 0.5);
+                }
+                
+                markerView.layer.transform = transform;
+                
+                //if marker is not already set then insert it
+                if (!markerView.superview) {
+                    [self.displayView insertSubview:markerView atIndex:1];
+                }
+                
+                //                    if (ABS(targFrame.origin.x - markerView.frame.origin.x) < 50.0) {
+                [UIView animateWithDuration:10.0
+                                      delay:0.2
+                                    options:UIViewAnimationCurveEaseInOut
+                                 animations:^{
+                                     markerView.frame = targFrame;
+                                 }
+                                 completion:nil];
+            }
 			
 			//if marker is not already set then insert it
 			if (!([markerView superview])) {
