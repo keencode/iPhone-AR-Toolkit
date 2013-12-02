@@ -22,7 +22,7 @@
 #define SCALE_FACTOR 1.0
 #define HEADING_NOT_SET -1.0
 #define DEGREE_TO_UPDATE 1
-#define ROTATION_FACTOR 1.5
+#define ROTATION_FACTOR 1
 #define DEFAULT_Y_OFFSET 2.0
 
 @interface AugmentedRealityController (Private)
@@ -383,7 +383,7 @@
 			float width	 = [markerView bounds].size.width  * scaleFactor;
 			float height = [markerView bounds].size.height * scaleFactor;
             
-            CGFloat targY = loc.y - ((1.0-scaleFactor) * loc.y * self.yOffsetFactor) + 50.0;
+            CGFloat targY = loc.y - ((1.0-scaleFactor) * loc.y * self.yOffsetFactor);
             CGRect targFrame = CGRectMake(loc.x - width / 2.0, targY, width, height);
 
 //			[markerView setFrame:CGRectMake(loc.x - width / 2.0, loc.y, width, height)];
@@ -415,41 +415,39 @@
 		//		double angleDifference	= itemAzimuth - centerAzimuth;
 		//		transform				= CATransform3DRotate(transform, [self maximumRotationAngle] * angleDifference / 0.3696f , 0, 1, 0);
 //			}
-                [[markerView layer] setTransform:transform];
-                [markerView setNeedsDisplay];
-                
-                if (angleDifference > 0) {
-                    markerView.layer.anchorPoint = CGPointMake(0.0, 0.5);
-                } else {
-                    markerView.layer.anchorPoint = CGPointMake(1.0, 0.5);
-                }
-                
-                markerView.layer.transform = transform;
-                
-                //if marker is not already set then insert it
-                if (!markerView.superview) {
-                    [self.displayView insertSubview:markerView atIndex:1];
-                }
-                
-                //                    if (ABS(targFrame.origin.x - markerView.frame.origin.x) < 50.0) {
-                [UIView animateWithDuration:10.0
-                                      delay:0.2
-                                    options:UIViewAnimationCurveEaseInOut
-                                 animations:^{
-                                     markerView.frame = targFrame;
-                                 }
-                                 completion:nil];
+//                [[markerView layer] setTransform:transform];
+//                [markerView setNeedsDisplay];
+//                
+//                if (angleDifference > 0) {
+//                    markerView.layer.anchorPoint = CGPointMake(0.0, 0.5);
+//                } else {
+//                    markerView.layer.anchorPoint = CGPointMake(1.0, 0.5);
+//                }
+//                
+//                markerView.layer.transform = transform;                
             }
-			
-			//if marker is not already set then insert it
-			if (!([markerView superview])) {
-				[[self displayView] insertSubview:markerView atIndex:1];
-			}
-		} 
-		else 
-            if ([markerView superview])
+            
+            markerView.frame = targFrame;
+            
+            if (!markerView.superview) {
+//                [self.displayView insertSubview:markerView atIndex:1];
+                [self.displayView addSubview:markerView];
+            }
+            
+//                    if (ABS(targFrame.origin.x - markerView.frame.origin.x) < 50.0) {
+//                [UIView animateWithDuration:10.0
+//                                      delay:0.2
+//                                    options:UIViewAnimationCurveEaseInOut
+//                                 animations:^{
+//                                     markerView.frame = targFrame;
+//                                 }
+//                                 completion:nil];
+		}
+		else {
+            if ([markerView superview]) {
                 [markerView removeFromSuperview];
-
+            }
+        }
 	}
 }
 
