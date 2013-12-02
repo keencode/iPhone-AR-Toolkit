@@ -44,7 +44,9 @@
 @property (nonatomic, retain) UILabel  *debugView;
 @property (nonatomic, retain) NSMutableArray	*coordinates;
 
-- (id)initWithView:(UIView*)arView parentViewController:(UIViewController*)parentVC withDelgate:(id<ARDelegate>) aDelegate;
+- (id)initWithView:(UIView *)arView parentViewController:(UIViewController*)parentVC
+       withDelgate:(id<ARDelegate>) aDelegate;
+
 - (void)setupDebugPostion;
 - (void)updateLocations;
 - (void)stopListening;

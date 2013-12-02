@@ -7,6 +7,7 @@
 //
 
 #import "AugmentedRealityController.h"
+#import "GPUImage.h"
 
 #define kFilteringFactor 0.05
 #define degreesToRadian(x) (M_PI * (x) / 180.0)
@@ -22,7 +23,7 @@
 #define SCALE_FACTOR 1.0
 #define HEADING_NOT_SET -1.0
 #define DEGREE_TO_UPDATE 1
-#define ROTATION_FACTOR 1.5
+#define ROTATION_FACTOR 1
 #define DEFAULT_Y_OFFSET 2.0
 
 @interface AugmentedRealityController (Private)
@@ -83,41 +84,40 @@
 
 #if !TARGET_IPHONE_SIMULATOR
     
-    NSError *error = nil;
-    AVCaptureSession *avCaptureSession = [[AVCaptureSession alloc] init];
-    AVCaptureDevice *videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-    AVCaptureDeviceInput *videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoCaptureDevice error:&error];
+//    NSError *error = nil;
+//    AVCaptureSession *avCaptureSession = [[AVCaptureSession alloc] init];
+//    AVCaptureDevice *videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+//    AVCaptureDeviceInput *videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoCaptureDevice error:&error];
+//    
+//    if (videoInput) {
+//        [avCaptureSession addInput:videoInput];
+//    }
+//    else {
+//        // Handle the failure.
+//    }
+//    
+//    AVCaptureVideoPreviewLayer *newCaptureVideoPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:avCaptureSession];
+//
+//    [[arView layer] setMasksToBounds:YES];
+//    [newCaptureVideoPreviewLayer setFrame:[arView bounds]];
+//    [newCaptureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
+//    
+//    if ([[newCaptureVideoPreviewLayer connection] isVideoOrientationSupported])
+//        [[newCaptureVideoPreviewLayer connection] setVideoOrientation:cameraOrientation];
+//    
+//    [newCaptureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
+//    [[arView layer] insertSublayer:newCaptureVideoPreviewLayer below:[[[arView layer] sublayers] objectAtIndex:0]];
+//    
+//    [self setPreviewLayer:newCaptureVideoPreviewLayer];
+//    
+//    [avCaptureSession setSessionPreset:AVCaptureSessionPresetHigh];
+//    [avCaptureSession startRunning];
+//    
+//    [self setCaptureSession:avCaptureSession];
     
-    if (videoInput) {
-        [avCaptureSession addInput:videoInput];
-    }
-    else {
-        // Handle the failure.
-    }
-    
-    AVCaptureVideoPreviewLayer *newCaptureVideoPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:avCaptureSession];
-
-    [[arView layer] setMasksToBounds:YES];
-    [newCaptureVideoPreviewLayer setFrame:[arView bounds]];
-    [newCaptureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
-    
-    if ([[newCaptureVideoPreviewLayer connection] isVideoOrientationSupported])
-        [[newCaptureVideoPreviewLayer connection] setVideoOrientation:cameraOrientation];
-    
-    [newCaptureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
-    [[arView layer] insertSublayer:newCaptureVideoPreviewLayer below:[[[arView layer] sublayers] objectAtIndex:0]];
-    
-    [self setPreviewLayer:newCaptureVideoPreviewLayer];
-    
-    [avCaptureSession setSessionPreset:AVCaptureSessionPresetHigh];
-    [avCaptureSession startRunning];
-    
-    [self setCaptureSession:avCaptureSession];  
-  
 #endif
 
     CLLocation *newCenter = [[CLLocation alloc] initWithLatitude:37.41711 longitude:-122.02528]; //TODO: We should get the latest heading here.
-	
 	[self setCenterLocation: newCenter];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(deviceOrientationDidChange:)
@@ -131,9 +131,9 @@
 
 -(void)unloadAV
 {
-    [captureSession stopRunning];
-    AVCaptureInput* input = [captureSession.inputs objectAtIndex:0];
-    [captureSession removeInput:input];
+//    [captureSession stopRunning];
+//    AVCaptureInput* input = [captureSession.inputs objectAtIndex:0];
+//    [captureSession removeInput:input];
     [[self previewLayer] removeFromSuperlayer];
     [self setCaptureSession:nil];
     [self setPreviewLayer:nil];
@@ -253,7 +253,9 @@
 }
 
 - (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration
-{	
+{
+    NSLog(@"didAccelerate x: %f", acceleration.x);
+    
 	switch (cameraOrientation) {
 		case UIDeviceOrientationLandscapeLeft:
 			viewAngle = atan2(acceleration.x, acceleration.z);
@@ -366,8 +368,8 @@
 
 - (void)updateLocations
 {
-	
-	[debugView setText: [NSString stringWithFormat:@"%.3f %.3f ", -radianToDegrees(viewAngle), radianToDegrees([[self centerCoordinate] azimuth])]];
+	[debugView setText: [NSString stringWithFormat:@"%.3f %.3f ", -radianToDegrees(viewAngle),
+                         radianToDegrees([[self centerCoordinate] azimuth])]];
 	
 	for (ARGeoCoordinate *item in [self coordinates]) {
 
@@ -383,25 +385,20 @@
 			float width	 = [markerView bounds].size.width  * scaleFactor;
 			float height = [markerView bounds].size.height * scaleFactor;
             
-            CGFloat targY = loc.y - ((1.0-scaleFactor) * loc.y * self.yOffsetFactor) + 50.0;
-            CGRect targFrame = CGRectMake(loc.x - width / 2.0, targY, width, height);
-
-//			[markerView setFrame:CGRectMake(loc.x - width / 2.0, loc.y, width, height)];
-//            [markerView setNeedsDisplay];
+//            CGFloat targY = loc.y - ((1.0-scaleFactor) * loc.y * self.yOffsetFactor);
+//            CGRect targFrame = CGRectMake(loc.x - width / 2.0, targY, width, height);
+            CGRect targFrame = CGRectMake(loc.x - width / 2.0, loc.y, width, height);
+			[markerView setFrame:targFrame];
+            [markerView setNeedsDisplay];
 			
 			CATransform3D transform = CATransform3DIdentity;
-            double angleDifference =  0.0;
 			
 			// Set the scale if it needs it. Scale the perspective transform if we have one.
 			if ([self scaleViewsBasedOnDistance]) 
 				transform = CATransform3DScale(transform, scaleFactor, scaleFactor, scaleFactor);
 		
 			if ([self rotateViewsBasedOnPerspective]) {
-                transform.m34 = -1.0 / 500.0;
-                angleDifference = item.azimuth - self.centerCoordinate.azimuth;
-                transform = CATransform3DRotate(transform, (-angleDifference * self.rotationFactor), 0, 1, 0);
-
-//				transform.m34 = 1.0 / 300.0;
+                transform.m34 = -1.0 / 300.0;
 		/*
 				double itemAzimuth		= [item azimuth];
 				double centerAzimuth	= [[self centerCoordinate] azimuth];
@@ -414,32 +411,9 @@
 		*/		
 		//		double angleDifference	= itemAzimuth - centerAzimuth;
 		//		transform				= CATransform3DRotate(transform, [self maximumRotationAngle] * angleDifference / 0.3696f , 0, 1, 0);
-//			}
-                [[markerView layer] setTransform:transform];
-                [markerView setNeedsDisplay];
-                
-                if (angleDifference > 0) {
-                    markerView.layer.anchorPoint = CGPointMake(0.0, 0.5);
-                } else {
-                    markerView.layer.anchorPoint = CGPointMake(1.0, 0.5);
-                }
-                
-                markerView.layer.transform = transform;
-                
-                //if marker is not already set then insert it
-                if (!markerView.superview) {
-                    [self.displayView insertSubview:markerView atIndex:1];
-                }
-                
-                //                    if (ABS(targFrame.origin.x - markerView.frame.origin.x) < 50.0) {
-                [UIView animateWithDuration:10.0
-                                      delay:0.2
-                                    options:UIViewAnimationCurveEaseInOut
-                                 animations:^{
-                                     markerView.frame = targFrame;
-                                 }
-                                 completion:nil];
-            }
+			}
+            
+            markerView.layer.transform = transform;
 			
 			//if marker is not already set then insert it
 			if (!([markerView superview])) {
@@ -449,7 +423,6 @@
 		else 
             if ([markerView superview])
                 [markerView removeFromSuperview];
-
 	}
 }
 
