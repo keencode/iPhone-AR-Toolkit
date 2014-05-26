@@ -40,7 +40,7 @@
 @implementation AugmentedRealityController
 
 @synthesize locationManager;
-@synthesize accelerometerManager;
+//@synthesize accelerometerManager;
 @synthesize displayView;
 @synthesize debugView;
 @synthesize centerCoordinate;
@@ -52,8 +52,8 @@
 @synthesize centerLocation;
 @synthesize coordinates;
 @synthesize debugMode;
-@synthesize captureSession;
-@synthesize previewLayer;
+//@synthesize captureSession;
+//@synthesize previewLayer;
 @synthesize delegate;
 @synthesize parentViewController;
 
@@ -134,9 +134,9 @@
 //    [captureSession stopRunning];
 //    AVCaptureInput* input = [captureSession.inputs objectAtIndex:0];
 //    [captureSession removeInput:input];
-    [[self previewLayer] removeFromSuperlayer];
-    [self setCaptureSession:nil];
-    [self setPreviewLayer:nil];
+//    [[self previewLayer] removeFromSuperlayer];
+//    [self setCaptureSession:nil];
+//    [self setPreviewLayer:nil];
     [self setDisplayView:nil];
 }
 
@@ -145,7 +145,7 @@
     [self stopListening];
     [self unloadAV];
     locationManager.delegate = nil;
-    [UIAccelerometer sharedAccelerometer].delegate = nil;
+//    [UIAccelerometer sharedAccelerometer].delegate = nil;
 }
 
 #pragma mark -	
@@ -166,11 +166,31 @@
         [self setLocationManager: newLocationManager];
 	}
 			
-	if (![self accelerometerManager]) {
-		[self setAccelerometerManager: [UIAccelerometer sharedAccelerometer]];
-		[[self accelerometerManager] setUpdateInterval: INTERVAL_UPDATE];
-		[[self accelerometerManager] setDelegate: self];
-	}
+//	if (![self accelerometerManager]) {
+//		[self setAccelerometerManager: [UIAccelerometer sharedAccelerometer]];
+//		[[self accelerometerManager] setUpdateInterval: INTERVAL_UPDATE];
+//		[[self accelerometerManager] setDelegate: self];
+//	}
+    
+    self.motionManager = [[CMMotionManager alloc] init];
+    self.motionManager.accelerometerUpdateInterval = INTERVAL_UPDATE;
+    self.motionManager.gyroUpdateInterval = INTERVAL_UPDATE;
+    
+    [self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue currentQueue]
+                                             withHandler:^(CMAccelerometerData *accelerometerData, NSError *error) {
+//                                                 [self outputAccelertionData:accelerometerData.acceleration];
+                                                 if (error){
+                                                     NSLog(@"%@", error);
+                                                 }
+                                             }];
+    
+    [self.motionManager startGyroUpdatesToQueue:[NSOperationQueue currentQueue]
+                                    withHandler:^(CMGyroData *gyroData, NSError *error) {
+//                                        [self outputRotationData:gyroData.rotationRate];
+                                        if (error){
+                                            NSLog(@"%@", error);
+                                        }
+                                    }];
 	
 	if (![self centerCoordinate]) 
 		[self setCenterCoordinate:[ARCoordinate coordinateWithRadialDistance:1.0 inclination:0 azimuth:0]];
@@ -184,9 +204,9 @@
        [[self locationManager] setDelegate: nil];
     }
     
-    if ([self accelerometerManager]) {
-       [[self accelerometerManager] setDelegate: nil];
-    }
+//    if ([self accelerometerManager]) {
+//       [[self accelerometerManager] setDelegate: nil];
+//    }
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading
@@ -252,6 +272,66 @@
 	}
 }
 
+- (void)outputAccelertionData:(CMAcceleration)acceleration {
+    switch (cameraOrientation) {
+		case UIDeviceOrientationLandscapeLeft:
+			viewAngle = atan2(acceleration.x, acceleration.z);
+			break;
+		case UIDeviceOrientationLandscapeRight:
+			viewAngle = atan2(-acceleration.x, acceleration.z);
+			break;
+		case UIDeviceOrientationPortrait:
+			viewAngle = atan2(acceleration.y, acceleration.z);
+			break;
+		case UIDeviceOrientationPortraitUpsideDown:
+			viewAngle = atan2(-acceleration.y, acceleration.z);
+			break;
+		default:
+			break;
+	}
+//    self.accX.text = [NSString stringWithFormat:@" %.2fg",acceleration.x];
+//    if(fabs(acceleration.x) > fabs(currentMaxAccelX))
+//    {
+//        currentMaxAccelX = acceleration.x;
+//    }
+//    self.accY.text = [NSString stringWithFormat:@" %.2fg",acceleration.y];
+//    if(fabs(acceleration.y) > fabs(currentMaxAccelY))
+//    {
+//        currentMaxAccelY = acceleration.y;
+//    }
+//    self.accZ.text = [NSString stringWithFormat:@" %.2fg",acceleration.z];
+//    if(fabs(acceleration.z) > fabs(currentMaxAccelZ))
+//    {
+//        currentMaxAccelZ = acceleration.z;
+//    }
+//    
+//    self.maxAccX.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelX];
+//    self.maxAccY.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelY];
+//    self.maxAccZ.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelZ];
+}
+
+- (void)outputRotationData:(CMRotationRate)rotation {
+//    self.rotX.text = [NSString stringWithFormat:@" %.2fr/s",rotation.x];
+//    if(fabs(rotation.x)> fabs(currentMaxRotX))
+//    {
+//        currentMaxRotX = rotation.x;
+//    }
+//    self.rotY.text = [NSString stringWithFormat:@" %.2fr/s",rotation.y];
+//    if(fabs(rotation.y) > fabs(currentMaxRotY))
+//    {
+//        currentMaxRotY = rotation.y;
+//    }
+//    self.rotZ.text = [NSString stringWithFormat:@" %.2fr/s",rotation.z];
+//    if(fabs(rotation.z) > fabs(currentMaxRotZ))
+//    {
+//        currentMaxRotZ = rotation.z;
+//    }
+//    
+//    self.maxRotX.text = [NSString stringWithFormat:@" %.2f",currentMaxRotX];
+//    self.maxRotY.text = [NSString stringWithFormat:@" %.2f",currentMaxRotY];
+//    self.maxRotZ.text = [NSString stringWithFormat:@" %.2f",currentMaxRotZ];
+}
+
 - (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration
 {
     NSLog(@"didAccelerate x: %f", acceleration.x);
@@ -303,7 +383,7 @@
 #pragma mark -	
 #pragma mark Location methods
 
--(double) findDeltaOfRadianCenter:(double*)centerAzimuth coordinateAzimuth:(double)pointAzimuth betweenNorth:(BOOL*) isBetweenNorth
+- (double)findDeltaOfRadianCenter:(double*)centerAzimuth coordinateAzimuth:(double)pointAzimuth betweenNorth:(BOOL*) isBetweenNorth
 {
 	if (*centerAzimuth < 0.0) 
 		*centerAzimuth = M_2PI + *centerAzimuth;
@@ -328,8 +408,7 @@
 }
 
 - (BOOL)shouldDisplayCoordinate:(ARCoordinate *)coordinate
-{
-	
+{	
 	double currentAzimuth = [[self centerCoordinate] azimuth];
 	double pointAzimuth	  = [coordinate azimuth];
 	BOOL isBetweenNorth	  = NO;
@@ -346,7 +425,6 @@
 
 - (CGPoint)pointForCoordinate:(ARCoordinate *)coordinate
 {
-	
 	CGPoint point;
 	CGRect realityBounds	= [[self displayView] bounds];
 	double currentAzimuth	= [[self centerCoordinate] azimuth];
@@ -465,26 +543,22 @@
 
 - (void)deviceOrientationDidChange:(NSNotification *)notification
 {	
-	prevHeading = HEADING_NOT_SET; 
-    
+	prevHeading = HEADING_NOT_SET;
     [self currentDeviceOrientation];
-	
     UIDeviceOrientation orientation = [[UIDevice currentDevice] orientation];
 	
     if (orientation != UIDeviceOrientationUnknown && orientation != UIDeviceOrientationFaceUp && orientation != UIDeviceOrientationFaceDown) {
-        
         CGRect bounds = [[self displayView] bounds];
         
         if (![[self parentViewController] shouldAutorotate]) {
-            
             CGAffineTransform transform = CGAffineTransformMakeRotation(degreesToRadian(0));
             
             switch (orientation) {
                 case UIDeviceOrientationLandscapeLeft:
-                    transform		   = CGAffineTransformMakeRotation(degreesToRadian(90));
+                    transform = CGAffineTransformMakeRotation(degreesToRadian(90));
                     break;
                 case UIDeviceOrientationLandscapeRight:
-                    transform		   = CGAffineTransformMakeRotation(degreesToRadian(-90));
+                    transform = CGAffineTransformMakeRotation(degreesToRadian(-90));
                     break;
                 case UIDeviceOrientationPortraitUpsideDown:
                     transform = CGAffineTransformMakeRotation(degreesToRadian(180));
@@ -542,5 +616,13 @@
 	}
 }
 
+- (BOOL)containsCoordinate:(ARGeoCoordinate *)coordinate {
+    NSPredicate *predictate = [NSPredicate predicateWithFormat:@"title == %@", coordinate.title];
+    NSArray *results = [self.coordinates filteredArrayUsingPredicate:predictate];
+    if ([results count] > 0)
+        return  YES;
+    
+    return NO;
+}
 
 @end

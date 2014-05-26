@@ -7,6 +7,7 @@
 //
 
 #import "ARKit.h"
+#import <CoreMotion/CoreMotion.h>
 
 @class ARCoordinate;
 
@@ -32,7 +33,9 @@
 @property double rotationFactor;
 @property double yOffsetFactor;
 
-@property (nonatomic, retain) UIAccelerometer           *accelerometerManager;
+//@property (nonatomic, retain) UIAccelerometer           *accelerometerManager;
+@property (strong, nonatomic) CMMotionManager *motionManager;
+
 @property (nonatomic, retain) CLLocationManager         *locationManager;
 @property (nonatomic, retain) ARCoordinate              *centerCoordinate;
 @property (nonatomic, retain) CLLocation                *centerLocation;
@@ -52,6 +55,8 @@
 - (void)stopListening;
 - (void)unloadAV;
 
+- (void)startListening;
+
 // Adding coordinates to the underlying data model.
 - (void)addCoordinate:(ARGeoCoordinate *)coordinate;
 
@@ -60,5 +65,6 @@
 - (void)removeCoordinates:(NSArray *)coordinateArray;
 - (void)updateDebugMode:(BOOL) flag;
 
+- (BOOL)containsCoordinate:(ARGeoCoordinate *)coordinate;
 
 @end
