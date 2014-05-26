@@ -19,7 +19,10 @@
     float	viewAngle;
 	float   prevHeading;
     int     cameraOrientation;
-
+    
+    double angleXaxis;
+    double angleYaxis;
+    double angleZaxis;
 }
 
 @property BOOL scaleViewsBasedOnDistance;
@@ -33,7 +36,6 @@
 @property double rotationFactor;
 @property double yOffsetFactor;
 
-//@property (nonatomic, retain) UIAccelerometer           *accelerometerManager;
 @property (strong, nonatomic) CMMotionManager *motionManager;
 
 @property (nonatomic, retain) CLLocationManager         *locationManager;

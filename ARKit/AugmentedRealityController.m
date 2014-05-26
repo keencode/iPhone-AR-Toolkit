@@ -26,7 +26,9 @@
 #define ROTATION_FACTOR 1
 #define DEFAULT_Y_OFFSET 2.0
 
+
 @interface AugmentedRealityController (Private)
+
 - (void)updateCenterCoordinate;
 - (void)startListening;
 - (void)currentDeviceOrientation;
@@ -40,7 +42,6 @@
 @implementation AugmentedRealityController
 
 @synthesize locationManager;
-//@synthesize accelerometerManager;
 @synthesize displayView;
 @synthesize debugView;
 @synthesize centerCoordinate;
@@ -52,11 +53,8 @@
 @synthesize centerLocation;
 @synthesize coordinates;
 @synthesize debugMode;
-//@synthesize captureSession;
-//@synthesize previewLayer;
 @synthesize delegate;
 @synthesize parentViewController;
-
 
 - (id)initWithView:(UIView*)arView parentViewController:(UIViewController*)parentVC withDelgate:(id<ARDelegate>) aDelegate
 {    
@@ -82,41 +80,6 @@
     
 	degreeRange = [arView frame].size.width / ADJUST_BY;
 
-#if !TARGET_IPHONE_SIMULATOR
-    
-//    NSError *error = nil;
-//    AVCaptureSession *avCaptureSession = [[AVCaptureSession alloc] init];
-//    AVCaptureDevice *videoCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-//    AVCaptureDeviceInput *videoInput = [AVCaptureDeviceInput deviceInputWithDevice:videoCaptureDevice error:&error];
-//    
-//    if (videoInput) {
-//        [avCaptureSession addInput:videoInput];
-//    }
-//    else {
-//        // Handle the failure.
-//    }
-//    
-//    AVCaptureVideoPreviewLayer *newCaptureVideoPreviewLayer = [[AVCaptureVideoPreviewLayer alloc] initWithSession:avCaptureSession];
-//
-//    [[arView layer] setMasksToBounds:YES];
-//    [newCaptureVideoPreviewLayer setFrame:[arView bounds]];
-//    [newCaptureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
-//    
-//    if ([[newCaptureVideoPreviewLayer connection] isVideoOrientationSupported])
-//        [[newCaptureVideoPreviewLayer connection] setVideoOrientation:cameraOrientation];
-//    
-//    [newCaptureVideoPreviewLayer setVideoGravity:AVLayerVideoGravityResizeAspectFill];
-//    [[arView layer] insertSublayer:newCaptureVideoPreviewLayer below:[[[arView layer] sublayers] objectAtIndex:0]];
-//    
-//    [self setPreviewLayer:newCaptureVideoPreviewLayer];
-//    
-//    [avCaptureSession setSessionPreset:AVCaptureSessionPresetHigh];
-//    [avCaptureSession startRunning];
-//    
-//    [self setCaptureSession:avCaptureSession];
-    
-#endif
-
     CLLocation *newCenter = [[CLLocation alloc] initWithLatitude:37.41711 longitude:-122.02528]; //TODO: We should get the latest heading here.
 	[self setCenterLocation: newCenter];
 	
@@ -131,12 +94,6 @@
 
 -(void)unloadAV
 {
-//    [captureSession stopRunning];
-//    AVCaptureInput* input = [captureSession.inputs objectAtIndex:0];
-//    [captureSession removeInput:input];
-//    [[self previewLayer] removeFromSuperlayer];
-//    [self setCaptureSession:nil];
-//    [self setPreviewLayer:nil];
     [self setDisplayView:nil];
 }
 
@@ -145,7 +102,6 @@
     [self stopListening];
     [self unloadAV];
     locationManager.delegate = nil;
-//    [UIAccelerometer sharedAccelerometer].delegate = nil;
 }
 
 #pragma mark -	
@@ -166,19 +122,13 @@
         [self setLocationManager: newLocationManager];
 	}
 			
-//	if (![self accelerometerManager]) {
-//		[self setAccelerometerManager: [UIAccelerometer sharedAccelerometer]];
-//		[[self accelerometerManager] setUpdateInterval: INTERVAL_UPDATE];
-//		[[self accelerometerManager] setDelegate: self];
-//	}
-    
     self.motionManager = [[CMMotionManager alloc] init];
     self.motionManager.accelerometerUpdateInterval = INTERVAL_UPDATE;
     self.motionManager.gyroUpdateInterval = INTERVAL_UPDATE;
     
     [self.motionManager startAccelerometerUpdatesToQueue:[NSOperationQueue currentQueue]
                                              withHandler:^(CMAccelerometerData *accelerometerData, NSError *error) {
-//                                                 [self outputAccelertionData:accelerometerData.acceleration];
+                                                 [self outputAccelertionData:accelerometerData.acceleration];
                                                  if (error){
                                                      NSLog(@"%@", error);
                                                  }
@@ -186,7 +136,7 @@
     
     [self.motionManager startGyroUpdatesToQueue:[NSOperationQueue currentQueue]
                                     withHandler:^(CMGyroData *gyroData, NSError *error) {
-//                                        [self outputRotationData:gyroData.rotationRate];
+                                        [self outputRotationData:gyroData.rotationRate];
                                         if (error){
                                             NSLog(@"%@", error);
                                         }
@@ -204,9 +154,9 @@
        [[self locationManager] setDelegate: nil];
     }
     
-//    if ([self accelerometerManager]) {
-//       [[self accelerometerManager] setDelegate: nil];
-//    }
+    [self.motionManager stopAccelerometerUpdates];
+    [self.motionManager stopDeviceMotionUpdates];
+    [self.motionManager stopGyroUpdates];
 }
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateHeading:(CLHeading *)newHeading
@@ -289,25 +239,10 @@
 		default:
 			break;
 	}
-//    self.accX.text = [NSString stringWithFormat:@" %.2fg",acceleration.x];
-//    if(fabs(acceleration.x) > fabs(currentMaxAccelX))
-//    {
-//        currentMaxAccelX = acceleration.x;
-//    }
-//    self.accY.text = [NSString stringWithFormat:@" %.2fg",acceleration.y];
-//    if(fabs(acceleration.y) > fabs(currentMaxAccelY))
-//    {
-//        currentMaxAccelY = acceleration.y;
-//    }
-//    self.accZ.text = [NSString stringWithFormat:@" %.2fg",acceleration.z];
-//    if(fabs(acceleration.z) > fabs(currentMaxAccelZ))
-//    {
-//        currentMaxAccelZ = acceleration.z;
-//    }
-//    
-//    self.maxAccX.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelX];
-//    self.maxAccY.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelY];
-//    self.maxAccZ.text = [NSString stringWithFormat:@" %.2f",currentMaxAccelZ];
+    
+    angleXaxis = acos(acceleration.x / sqrt(pow(acceleration.x, 2) + pow(acceleration.y, 2) + pow(acceleration.z, 2)));
+    angleYaxis = acos(acceleration.y / sqrt(pow(acceleration.x, 2) + pow(acceleration.y, 2) + pow(acceleration.z, 2)));
+    angleZaxis = acos(acceleration.z / sqrt(pow(acceleration.x, 2) + pow(acceleration.y, 2) + pow(acceleration.z, 2)));
 }
 
 - (void)outputRotationData:(CMRotationRate)rotation {
@@ -325,8 +260,8 @@
 //    if(fabs(rotation.z) > fabs(currentMaxRotZ))
 //    {
 //        currentMaxRotZ = rotation.z;
+//        currentRotZ = rotation.z;
 //    }
-//    
 //    self.maxRotX.text = [NSString stringWithFormat:@" %.2f",currentMaxRotX];
 //    self.maxRotY.text = [NSString stringWithFormat:@" %.2f",currentMaxRotY];
 //    self.maxRotZ.text = [NSString stringWithFormat:@" %.2f",currentMaxRotZ];
@@ -408,7 +343,7 @@
 }
 
 - (BOOL)shouldDisplayCoordinate:(ARCoordinate *)coordinate
-{	
+{
 	double currentAzimuth = [[self centerCoordinate] azimuth];
 	double pointAzimuth	  = [coordinate azimuth];
 	BOOL isBetweenNorth	  = NO;
@@ -439,7 +374,7 @@
 	else
 		point.x = (realityBounds.size.width / 2) - ((deltaAzimith / degreesToRadian(1)) * ADJUST_BY);	// Left side of Azimuth
 	
-	point.y = (realityBounds.size.height / 2); // + (radianToDegrees(M_PI_2 + viewAngle)  * 2.0);
+	point.y = (realityBounds.size.height / 2) + 100 - (angleZaxis * 100); // + (radianToDegrees(M_PI_2 + viewAngle)  * 2.0);
   	
 	return point;
 }
