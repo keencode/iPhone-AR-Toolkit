@@ -269,8 +269,7 @@
 
 - (void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration
 {
-    NSLog(@"didAccelerate x: %f", acceleration.x);
-    
+//    NSLog(@"didAccelerate x: %f", acceleration.x);
 	switch (cameraOrientation) {
 		case UIDeviceOrientationLandscapeLeft:
 			viewAngle = atan2(acceleration.x, acceleration.z);
@@ -374,7 +373,7 @@
 	else
 		point.x = (realityBounds.size.width / 2) - ((deltaAzimith / degreesToRadian(1)) * ADJUST_BY);	// Left side of Azimuth
 	
-	point.y = (realityBounds.size.height / 2) + 100 - (angleZaxis * 100); // + (radianToDegrees(M_PI_2 + viewAngle)  * 2.0);
+	point.y = (realityBounds.size.height / 2) + 300 - (angleZaxis * 200); // + (radianToDegrees(M_PI_2 + viewAngle)  * 2.0);
   	
 	return point;
 }
