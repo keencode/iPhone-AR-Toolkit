@@ -118,7 +118,8 @@
 		[newLocationManager startUpdatingHeading];
 		[newLocationManager startUpdatingLocation];
 		[newLocationManager setDelegate: self];
-        
+        [newLocationManager requestWhenInUseAuthorization];
+        [newLocationManager requestAlwaysAuthorization];        
         [self setLocationManager: newLocationManager];
 	}
 			
